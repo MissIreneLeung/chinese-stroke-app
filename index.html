@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-HK">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>漢字筆順大挑戰</title>
+  <title>香港小學漢字筆順大挑戰</title>
   <!-- 載入 Hanzi Writer CDN -->
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
   <style>
     body {
-      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+      font-family: "PingFang HK", "Microsoft JhengHei", sans-serif;
       background-color: #f0f8ff;
       text-align: center;
       padding: 20px;
@@ -16,11 +16,16 @@
     }
     h1 {
       color: #0277bd;
+      margin-bottom: 5px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #555;
       margin-bottom: 15px;
     }
     .control-panel {
       background-color: white;
-      max-width: 500px;
+      max-width: 520px;
       margin: 0 auto 15px auto;
       padding: 15px;
       border-radius: 10px;
@@ -79,6 +84,12 @@
     }
     .word-bank {
       margin: 10px 0;
+      max-height: 130px;
+      overflow-y: auto;
+      padding: 5px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background-color: #fafafa;
     }
     .word-btn {
       background-color: white;
@@ -119,6 +130,7 @@
 <body>
 
   <h1>漢字筆順大挑戰</h1>
+  <div class="subtitle">參考香港教育局《香港小學學習字詞表》設計</div>
 
   <div class="control-panel">
     <!-- 自訂輸入多字詞語 -->
@@ -127,14 +139,19 @@
       <button onclick="loadCustomWord()">載入詞語</button>
     </div>
 
-    <!-- 主題分類選單 -->
+    <!-- 香港教育局小一至小六課程分類選單 -->
     <div class="category-group">
-      <label for="category-select"><strong>主題分類：</strong></label>
+      <label for="category-select"><strong>字詞類別：</strong></label>
       <select id="category-select" onchange="changeCategory()">
-        <option value="grade1">一年級常用字</option>
-        <option value="animals">可愛動物</option>
-        <option value="body">身體部位</option>
-        <option value="nature">自然現象</option>
+        <option value="primary1">小一核心字詞</option>
+        <option value="primary2">小二進階字詞</option>
+        <option value="primary3">小三提升字詞</option>
+        <option value="primary4">小四高階字詞</option>
+        <option value="primary5">小五深化字詞</option>
+        <option value="primary6">小六畢業字詞</option>
+        <option value="idioms">常用四字成語</option>
+        <option value="hk_places">香港地名與生活</option>
+        <option value="virtues">品格與情感</option>
       </select>
     </div>
 
@@ -147,8 +164,8 @@
     <div class="voice-group">
       <label for="lang-select"><strong>發音語言：</strong></label>
       <select id="lang-select">
-        <option value="zh-HK">粵語 (廣東話)</option>
-        <option value="zh-TW" selected>國語 (普通話)</option>
+        <option value="zh-HK" selected>粵語 (廣東話)</option>
+        <option value="zh-TW">國語 (普通話)</option>
       </select>
       <button class="btn-audio" onclick="speakCurrentChar()">🔊 播放發音</button>
     </div>
@@ -171,12 +188,17 @@
   </div>
 
   <script>
-    // 主題分類詞庫資料
-    const categories = {
-      grade1: ['學習', '學校', '朋友', '老師', '大小', '多少'],
-      animals: ['小狗', '小貓', '飛鳥', '游魚', '白兔', '大象'],
-      body: ['眼睛', '雙手', '雙腳', '耳朵', '嘴巴', '頭髮'],
-      nature: ['太陽', '月亮', '白雲', '下雨', '大山', '流水']
+    // 依據香港教育局《香港小學學習字詞表》整理之小一至小六完整詞庫
+    const edbCategories = {
+      primary1: ['學習', '學校', '老師', '同學', '爸爸', '媽媽', '朋友', '寫字', '讀書', '開心', '看書', '身體'],
+      primary2: ['禮貌', '整理', '照顧', '互相', '幫助', '合作', '勤力', '美麗', '健康', '環境', '保護', '分享'],
+      primary3: ['珍惜', '勇敢', '堅強', '鼓勵', '討論', '觀察', '創新', '思考', '負責任', '尊重', '感謝', '豐富'],
+      primary4: ['氣候', '資源', '繁榮', '奧秘', '探索', '經驗', '價值', '傳統', '發展', '貢獻', '關懷', '體諒'],
+      primary5: ['展覽', '經濟', '成就', '影響', '結構', '概念', '邏輯', '系統', '綜合', '分析', '效率', '敏捷'],
+      primary6: ['抱負', '國際', '宏觀', '維護', '轉折', '哲理', '素質', '趨勢', '理想', '卓越', '前瞻', '淵博'],
+      idioms: ['持之以恆', '自強不息', '溫故知新', '迎難而上', '博覽群書', '同心協力', '循序漸進', '專心致志'],
+      hk_places: ['香港', '九龍', '新界', '海港', '公園', '圖書館', '博物館', '車站', '學校', '街道'],
+      virtues: ['誠實', '善良', '守時', '友愛', '專心', '謙虛', '和諧', '感謝', '堅毅']
     };
 
     let currentWord = "學習";
@@ -186,21 +208,23 @@
     // 初始化與載入分類按鈕
     function changeCategory() {
       const selectedCat = document.getElementById('category-select').value;
-      const wordList = categories[selectedCat];
+      const wordList = edbCategories[selectedCat];
       const bankContainer = document.getElementById('word-bank-container');
       bankContainer.innerHTML = '';
 
-      wordList.forEach((word, idx) => {
-        const btn = document.createElement('button');
-        btn.className = 'word-btn' + (idx === 0 ? ' active' : '');
-        btn.innerText = word;
-        btn.onclick = () => selectWord(word, btn);
-        bankContainer.appendChild(btn);
-      });
+      if (wordList) {
+        wordList.forEach((word, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'word-btn' + (idx === 0 ? ' active' : '');
+          btn.innerText = word;
+          btn.onclick = () => selectWord(word, btn);
+          bankContainer.appendChild(btn);
+        });
 
-      // 載入該分類第一個詞語
-      if (wordList.length > 0) {
-        selectWord(wordList[0]);
+        // 載入該分類第一個詞語
+        if (wordList.length > 0) {
+          selectWord(wordList[0]);
+        }
       }
     }
 
@@ -226,7 +250,6 @@
       if (val) {
         currentWord = val;
         currentIndex = 0;
-        // 清除按鈕高亮
         document.querySelectorAll('.word-btn').forEach(btn => btn.classList.remove('active'));
         loadCharAtIndex();
       }
@@ -240,7 +263,7 @@
       
       // 更新進度顯示
       document.getElementById('progress-indicator').innerText = 
-        `詞語：「${currentWord}」 （第 ${currentIndex + 1} / ${currentWord.length} 字：${currentChar}）`;
+        `詞語：「${currentWord}」（第 ${currentIndex + 1} / ${currentWord.length} 字：${currentChar}）`;
 
       // 更新上一字/下一字按鈕狀態
       document.getElementById('btn-prev').disabled = (currentIndex === 0);
