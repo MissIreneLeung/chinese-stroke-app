@@ -91,6 +91,14 @@
       height: 24px;
     }
   </style>
+  .target-box {
+  width: 300px;
+  height: 300px;
+  border: 2px solid #de2910; /* 朱紅邊框 */
+  position: relative;
+  background-color: #fff8f0; /* 米黃宣紙底色 */
+  margin: 10px auto;
+}
 </head>
 <body>
 
@@ -126,6 +134,40 @@
   <div id="message"></div>
 
   <script>
+    function drawRiceGrid(svg) {
+  const size = 300;
+  const half = size / 2;
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+  group.setAttribute('stroke', '#e8b4b4'); // 米字格虛線顏色
+  group.setAttribute('stroke-dasharray', '4 4');
+  group.setAttribute('stroke-width', '1');
+
+  const lines = [
+    `M 0 ${half} L ${size} ${half}`,
+    `M ${half} 0 L ${half} ${size}`,
+    `M 0 0 L ${size} ${size}`,
+    `M ${size} 0 L 0 ${size}`
+  ];
+
+  lines.forEach(pathData => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathData);
+    group.appendChild(path);
+  });
+
+  svg.appendChild(group);
+}
+
+// 在 HanziWriter.create 的選項中加入 onRender
+HanziWriter.create('grid-container', '永', {
+  width: 300,
+  height: 300,
+  padding: 5,
+  showOutline: true,
+  onRender: function(svg) {
+    drawRiceGrid(svg);
+  }
+});
     let writer;
     let currentChar = '永';
 
