@@ -31,8 +31,17 @@
       border-radius: 10px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-    .input-group, .voice-group, .category-group {
+    .student-info-group, .input-group, .voice-group, .category-group {
       margin-bottom: 12px;
+    }
+    .student-info-group input {
+      padding: 6px 10px;
+      font-size: 15px;
+      width: 100px;
+      margin: 3px;
+      border: 1px solid #0277bd;
+      border-radius: 4px;
+      text-align: center;
     }
     input[type="text"] {
       padding: 8px 12px;
@@ -84,7 +93,7 @@
     }
     .word-bank {
       margin: 10px 0;
-      max-height: 130px;
+      max-height: 120px;
       overflow-y: auto;
       padding: 5px;
       border: 1px solid #e0e0e0;
@@ -112,9 +121,9 @@
     .target-box {
       width: 300px;
       height: 300px;
-      border: 3px solid #de2910; /* 中式朱紅邊框 */
+      border: 3px solid #de2910;
       position: relative;
-      background-color: #fff8f0; /* 米黃宣紙底色 */
+      background-color: #fff8f0;
       border-radius: 8px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       margin: 15px auto;
@@ -125,6 +134,13 @@
       color: #333;
       margin: 10px 0 5px 0;
     }
+    #status-msg {
+      font-size: 14px;
+      color: #2e7d32;
+      font-weight: bold;
+      height: 20px;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -133,6 +149,14 @@
   <div class="subtitle">參考香港教育局《香港小學學習字詞表》設計</div>
 
   <div class="control-panel">
+    <!-- 學生個人資訊（用於傳送數據至 Google Sheets） -->
+    <div class="student-info-group">
+      <label><strong>班級/座號：</strong></label>
+      <input type="text" id="student-class" placeholder="例: 1A(05)">
+      <label><strong>姓名：</strong></label>
+      <input type="text" id="student-name" placeholder="例: 陳小明">
+    </div>
+
     <!-- 自訂輸入多字詞語 -->
     <div class="input-group">
       <input type="text" id="char-input" value="學習" placeholder="請輸入單字或詞語">
@@ -156,9 +180,7 @@
     </div>
 
     <!-- 常用詞語庫 -->
-    <div class="word-bank" id="word-bank-container">
-      <!-- 動態生成詞語按鈕 -->
-    </div>
+    <div class="word-bank" id="word-bank-container"></div>
 
     <!-- 發音語言選擇與朗讀 -->
     <div class="voice-group">
@@ -186,9 +208,13 @@
     <button onclick="animateChar()">觀看示範</button>
     <button onclick="quizChar()">開始練習</button>
   </div>
+  
+  <div id="status-msg"></div>
 
   <script>
-    // 依據香港教育局《香港小學學習字詞表》整理之小一至小六完整詞庫
+    // ⚠️ 請在此處貼上你在 Google Apps Script 部署後獲得的 Web App URL
+    const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbyaJRaXNKz8Tyx1fcYgo0Mw0Eu9dpHUVOdQwbTcYkiFMobrGipCHDzTxNw1G9rH3Nq2Uw/exec;
+
     const edbCategories = {
       primary1: ['學習', '學校', '老師', '同學', '爸爸', '媽媽', '朋友', '寫字', '讀書', '開心', '看書', '身體'],
       primary2: ['禮貌', '整理', '照顧', '互相', '幫助', '合作', '勤力', '美麗', '健康', '環境', '保護', '分享'],
@@ -205,7 +231,6 @@
     let currentIndex = 0;
     let writer;
 
-    // 初始化與載入分類按鈕
     function changeCategory() {
       const selectedCat = document.getElementById('category-select').value;
       const wordList = edbCategories[selectedCat];
@@ -221,20 +246,17 @@
           bankContainer.appendChild(btn);
         });
 
-        // 載入該分類第一個詞語
         if (wordList.length > 0) {
           selectWord(wordList[0]);
         }
       }
     }
 
-    // 選擇特定詞語
     function selectWord(word, targetBtn) {
       currentWord = word;
       currentIndex = 0;
       document.getElementById('char-input').value = word;
 
-      // 更新按鈕高亮狀態
       const buttons = document.querySelectorAll('.word-btn');
       buttons.forEach(btn => btn.classList.remove('active'));
       if (targetBtn) {
@@ -244,7 +266,6 @@
       loadCharAtIndex();
     }
 
-    // 載入自訂輸入框的詞語
     function loadCustomWord() {
       const val = document.getElementById('char-input').value.trim();
       if (val) {
@@ -255,25 +276,20 @@
       }
     }
 
-    // 依據索引載入當前單字與更新控制按鈕
     function loadCharAtIndex() {
       if (currentWord.length === 0) return;
 
       const currentChar = currentWord[currentIndex];
       
-      // 更新進度顯示
       document.getElementById('progress-indicator').innerText = 
         `詞語：「${currentWord}」（第 ${currentIndex + 1} / ${currentWord.length} 字：${currentChar}）`;
 
-      // 更新上一字/下一字按鈕狀態
       document.getElementById('btn-prev').disabled = (currentIndex === 0);
       document.getElementById('btn-next').disabled = (currentIndex === currentWord.length - 1);
 
-      // 初始化 Hanzi Writer
       initWriter(currentChar);
     }
 
-    // 上一字 / 下一字
     function prevChar() {
       if (currentIndex > 0) {
         currentIndex--;
@@ -288,12 +304,11 @@
       }
     }
 
-    // 繪製米字格 SVG 背景
     function drawRiceGrid(svg) {
       const size = 300;
       const half = size / 2;
       const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-      group.setAttribute('stroke', '#e8b4b4'); // 柔和米字格虛線
+      group.setAttribute('stroke', '#e8b4b4');
       group.setAttribute('stroke-dasharray', '4 4');
       group.setAttribute('stroke-width', '1');
 
@@ -313,9 +328,10 @@
       svg.appendChild(group);
     }
 
-    // 初始化 Hanzi Writer
     function initWriter(character) {
       document.getElementById('grid-container').innerHTML = '';
+      document.getElementById('status-msg').innerText = '';
+
       writer = HanziWriter.create('grid-container', character, {
         width: 300,
         height: 300,
@@ -328,36 +344,84 @@
           drawRiceGrid(svg);
         }
       });
-      // 自動朗讀當前單字
       speakCurrentChar();
-    }
-
-    // 語音朗讀功能 (Web Speech API)
-    function speakCurrentChar() {
-      if (currentWord.length === 0) return;
-      const currentChar = currentWord[currentIndex];
-
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(currentChar);
-        const selectedLang = document.getElementById('lang-select').value;
-        utterance.lang = selectedLang;
-        utterance.rate = 0.8;
-
-        window.speechSynthesis.speak(utterance);
-      }
     }
 
     function animateChar() {
       if (writer) writer.animateCharacter();
     }
 
+    // 開始測驗並在完成時上傳數據至 Google Sheets
     function quizChar() {
-      if (writer) writer.quiz();
+      if (!writer) return;
+      
+      writer.quiz({
+        onComplete: function(summary) {
+          const totalMistakes = summary.totalMistakes;
+          let stars = "⭐⭐⭐ (太棒了)";
+          if (totalMistakes > 2 && totalMistakes <= 5) stars = "⭐⭐ (加油)";
+          if (totalMistakes > 5) stars = "⭐ (再試一次)";
+
+          alert(`🎉 恭喜完成「${currentWord[currentIndex]}」字練習！\n錯誤筆劃數：${totalMistakes}\n評分：${stars}`);
+
+          // 自動上傳學習數據至 Google Sheets
+          uploadProgressToSheets(totalMistakes, stars);
+        }
+      });
     }
 
-    // 頁面載入時初始化
+    // 數據傳送函式 (Fetch API)
+    function uploadProgressToSheets(mistakes, stars) {
+      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE")) {
+        console.log("未設定 Google Apps Script URL，跳過數據上傳");
+        return;
+      }
+
+      const sName = document.getElementById('student-name').value.trim();
+      const sClass = document.getElementById('student-class').value.trim();
+
+      document.getElementById('status-msg').innerText = "正在記錄學習進度至雲端...";
+
+      const payload = {
+        studentName: sName || "未填寫",
+        studentClass: sClass || "未填寫",
+        word: currentWord,
+        character: currentWord[currentIndex],
+        mistakes: mistakes,
+        stars: stars
+      };
+
+      fetch(GOOGLE_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors", // 跨域請求標籤
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        document.getElementById('status-msg').innerText = "✅ 練習紀錄已成功儲存至試算表！";
+      })
+      .catch(err => {
+        console.error("Upload error:", err);
+        document.getElementById('status-msg').innerText = "⚠️ 數據記錄失敗，請檢查網路連線。";
+      });
+    }
+
+    function speakCurrentChar() {
+      if (currentWord.length === 0) return;
+      const currentChar = currentWord[currentIndex];
+
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(currentChar);
+        const selectedLang = document.getElementById('lang-select').value;
+        utterance.lang = selectedLang;
+        utterance.rate = 0.8;
+        window.speechSynthesis.speak(utterance);
+      }
+    }
+
     window.onload = function() {
       changeCategory();
     };
