@@ -18,7 +18,7 @@
       color: #0277bd;
       margin-bottom: 20px;
     }
-    .input-group {
+    .input-group, .voice-group {
       margin-bottom: 15px;
     }
     input[type="text"] {
@@ -29,6 +29,15 @@
       border: 2px solid #0277bd;
       border-radius: 6px;
       outline: none;
+    }
+    select {
+      padding: 8px 12px;
+      font-size: 16px;
+      border: 2px solid #0277bd;
+      border-radius: 6px;
+      background-color: white;
+      outline: none;
+      cursor: pointer;
     }
     button {
       padding: 8px 16px;
@@ -42,6 +51,12 @@
     }
     button:hover {
       background-color: #01579b;
+    }
+    .btn-audio {
+      background-color: #ff9800;
+    }
+    .btn-audio:hover {
+      background-color: #f57c00;
     }
     .word-bank {
       margin: 15px 0;
@@ -80,6 +95,16 @@
     <button onclick="updateChar()">載入漢字</button>
   </div>
 
+  <!-- 發音語言選擇與朗讀按鈕 -->
+  <div class="voice-group">
+    <label for="lang-select"><strong>發音語言：</strong></label>
+    <select id="lang-select">
+      <option value="zh-HK">粵語 (廣東話)</option>
+      <option value="zh-TW" selected>國語 (普通話)</option>
+    </select>
+    <button class="btn-audio" onclick="speakCurrentChar()">🔊 播放發音</button>
+  </div>
+
   <div class="word-bank">
     常用字詞庫：<br>
     <button class="word-btn" onclick="setChar('永')">永</button>
@@ -101,6 +126,7 @@
 
   <script>
     let writer;
+    let currentChar = '永';
 
     // 繪製米字格 SVG 背景
     function drawRiceGrid(svg) {
@@ -129,6 +155,7 @@
 
     // 初始化 Hanzi Writer
     function initWriter(character) {
+      currentChar = character;
       document.getElementById('grid-container').innerHTML = '';
       writer = HanziWriter.create('grid-container', character, {
         width: 300,
@@ -142,6 +169,25 @@
           drawRiceGrid(svg);
         }
       });
+      // 載入新字時自動播放一次發音
+      speakCurrentChar();
+    }
+
+    // 語音朗讀功能 (Web Speech API)
+    function speakCurrentChar() {
+      if ('speechSynthesis' in window) {
+        // 停止之前的語音播放
+        window.speechSynthesis.cancel();
+        
+        const utterance = new SpeechSynthesisUtterance(currentChar);
+        const selectedLang = document.getElementById('lang-select').value;
+        utterance.lang = selectedLang;
+        utterance.rate = 0.8; // 稍微放慢語速，方便小朋友聽清楚
+
+        window.speechSynthesis.speak(utterance);
+      } else {
+        alert("您的瀏覽器不支援語音朗讀功能");
+      }
     }
 
     function updateChar() {
