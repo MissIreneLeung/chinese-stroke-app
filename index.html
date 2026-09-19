@@ -4,231 +4,170 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>漢字筆順大挑戰</title>
+  <!-- 載入 Hanzi Writer CDN -->
   <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      margin: 0;
+      font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
       background-color: #f0f8ff;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
     }
     h1 {
-      color: #0288d1;
-      margin-bottom: 10px;
+      color: #0277bd;
+      margin-bottom: 20px;
     }
-    .input-section {
+    .input-group {
       margin-bottom: 15px;
-      display: flex;
-      gap: 8px;
-      align-items: center;
     }
     input[type="text"] {
       padding: 8px 12px;
       font-size: 18px;
-      width: 100px;
+      width: 120px;
       text-align: center;
-      border: 2px solid #0288d1;
-      border-radius: 8px;
+      border: 2px solid #0277bd;
+      border-radius: 6px;
       outline: none;
     }
-    .word-bank {
-      margin-bottom: 20px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
-      max-width: 320px;
-    }
-    .word-btn {
-      padding: 6px 12px;
+    button {
+      padding: 8px 16px;
       font-size: 16px;
-      background-color: #ffffff;
-      border: 1px solid #b3e5fc;
+      background-color: #0277bd;
+      color: white;
+      border: none;
       border-radius: 6px;
       cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #01579b;
+    }
+    .word-bank {
+      margin: 15px 0;
+    }
+    .word-btn {
+      background-color: white;
       color: #0277bd;
-      font-weight: bold;
+      border: 1px solid #0277bd;
+      padding: 5px 10px;
+      font-size: 16px;
+      border-radius: 4px;
+      margin: 3px;
     }
     .word-btn:hover {
       background-color: #e1f5fe;
     }
-    #character-target-div {
+    /* 米字格寫字框容器 */
+    .target-box {
       width: 300px;
       height: 300px;
-      border: 4px solid #0288d1;
-      border-radius: 12px;
-      background-color: #ffffff;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-    }
-    .controls {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 15px;
-    }
-    button.action-btn {
-      padding: 10px 20px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #ffffff;
-      background-color: #0288d1;
-      border: none;
+      border: 3px solid #de2910; /* 中式朱紅邊框 */
+      position: relative;
+      background-color: #fff8f0; /* 米黃宣紙底色 */
       border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    button.action-btn:hover {
-      background-color: #01579b;
-    }
-    #message {
-      font-size: 18px;
-      font-weight: bold;
-      color: #333333;
-      height: 24px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+      margin: 15px auto;
     }
   </style>
-  .target-box {
-  width: 300px;
-  height: 300px;
-  border: 2px solid #de2910; /* 朱紅邊框 */
-  position: relative;
-  background-color: #fff8f0; /* 米黃宣紙底色 */
-  margin: 10px auto;
-}
 </head>
 <body>
 
   <h1>漢字筆順大挑戰</h1>
 
-  <!-- 自由輸入框 -->
-  <div class="input-section">
-    <input type="text" id="char-input" maxlength="1" value="永" placeholder="輸入字">
-    <button class="action-btn" onclick="changeCharacter()">載入漢字</button>
+  <div class="input-group">
+    <input type="text" id="char-input" value="永" maxlength="1">
+    <button onclick="updateChar()">載入漢字</button>
   </div>
 
-  <!-- 小學常用字詞庫 -->
   <div class="word-bank">
-    <span style="font-size: 14px; color: #555; width: 100%; text-align: center;">常用字詞庫：</span>
-    <button class="word-btn" onclick="loadChar('永')">永</button>
-    <button class="word-btn" onclick="loadChar('花')">花</button>
-    <button class="word-btn" onclick="loadChar('草')">草</button>
-    <button class="word-btn" onclick="loadChar('山')">山</button>
-    <button class="word-btn" onclick="loadChar('水')">水</button>
-    <button class="word-btn" onclick="loadChar('愛')">愛</button>
-    <button class="word-btn" onclick="loadChar('學')">學</button>
+    常用字詞庫：<br>
+    <button class="word-btn" onclick="setChar('永')">永</button>
+    <button class="word-btn" onclick="setChar('花')">花</button>
+    <button class="word-btn" onclick="setChar('草')">草</button>
+    <button class="word-btn" onclick="setChar('山')">山</button>
+    <button class="word-btn" onclick="setChar('水')">水</button>
+    <button class="word-btn" onclick="setChar('愛')">愛</button>
+    <button class="word-btn" onclick="setChar('學')">學</button>
   </div>
 
-  <!-- 筆順畫布 -->
-  <div id="character-target-div"></div>
+  <!-- 寫字框容器 -->
+  <div id="grid-container" class="target-box"></div>
 
-  <!-- 操作按鈕 -->
-  <div class="controls">
-    <button class="action-btn" onclick="animateChar()">觀看示範</button>
-    <button class="action-btn" onclick="startQuiz()">開始練習</button>
+  <div>
+    <button onclick="animateChar()">觀看示範</button>
+    <button onclick="quizChar()">開始練習</button>
   </div>
-
-  <div id="message"></div>
 
   <script>
-    function drawRiceGrid(svg) {
-  const size = 300;
-  const half = size / 2;
-  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-  group.setAttribute('stroke', '#e8b4b4'); // 米字格虛線顏色
-  group.setAttribute('stroke-dasharray', '4 4');
-  group.setAttribute('stroke-width', '1');
-
-  const lines = [
-    `M 0 ${half} L ${size} ${half}`,
-    `M ${half} 0 L ${half} ${size}`,
-    `M 0 0 L ${size} ${size}`,
-    `M ${size} 0 L 0 ${size}`
-  ];
-
-  lines.forEach(pathData => {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', pathData);
-    group.appendChild(path);
-  });
-
-  svg.appendChild(group);
-}
-
-// 在 HanziWriter.create 的選項中加入 onRender
-HanziWriter.create('grid-container', '永', {
-  width: 300,
-  height: 300,
-  padding: 5,
-  showOutline: true,
-  onRender: function(svg) {
-    drawRiceGrid(svg);
-  }
-});
     let writer;
-    let currentChar = '永';
 
-    function initWriter(char) {
-      document.getElementById('character-target-div').innerHTML = '';
-      currentChar = char;
-      document.getElementById('char-input').value = char;
+    // 繪製米字格 SVG 背景
+    function drawRiceGrid(svg) {
+      const size = 300;
+      const half = size / 2;
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.setAttribute('stroke', '#e8b4b4'); // 柔和米字格虛線
+      group.setAttribute('stroke-dasharray', '4 4');
+      group.setAttribute('stroke-width', '1');
 
-      writer = HanziWriter.create('character-target-div', char, {
+      const lines = [
+        `M 0 ${half} L ${size} ${half}`, // 橫虛線
+        `M ${half} 0 L ${half} ${size}`, // 豎虛線
+        `M 0 0 L ${size} ${size}`,       // 對角線 1
+        `M ${size} 0 L 0 ${size}`        // 對角線 2
+      ];
+
+      lines.forEach(pathData => {
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        group.appendChild(path);
+      });
+
+      svg.appendChild(group);
+    }
+
+    // 初始化 Hanzi Writer
+    function initWriter(character) {
+      document.getElementById('grid-container').innerHTML = '';
+      writer = HanziWriter.create('grid-container', character, {
         width: 300,
         height: 300,
-        padding: 15,
+        padding: 10,
         showOutline: true,
-        strokeAnimationSpeed: 1,
-        delayBetweenStrokes: 200,
-        radicalColor: '#168f16'
+        strokeColor: '#000000',
+        outlineColor: '#ddd',
+        drawingColor: '#333',
+        onRender: function(svg) {
+          drawRiceGrid(svg);
+        }
       });
-      document.getElementById('message').innerText = "";
     }
 
-    function animateChar() {
-      if (writer) {
-        document.getElementById('message').innerText = "正在示範筆順...";
-        writer.animateCharacter({
-          onComplete: function() {
-            document.getElementById('message').innerText = "示範完成！請點擊『開始練習』。";
-          }
-        });
+    function updateChar() {
+      const char = document.getElementById('char-input').value.trim();
+      if (char) {
+        initWriter(char[0]);
       }
     }
 
-    function startQuiz() {
-      if (writer) {
-        document.getElementById('message').innerText = "請按照筆順寫出這個字！";
-        writer.quiz({
-          onMistake: function(strokeData) {
-            document.getElementById('message').innerText = "筆順或位置不對喔，再試一次！";
-          },
-          onCorrectStroke: function(strokeData) {
-            document.getElementById('message').innerText = `太棒了！寫對第 ${strokeData.strokeNum + 1} 劃！`;
-          },
-          onComplete: function(summaryData) {
-            document.getElementById('message').innerText = "🎉 恭喜你！成功寫完這個字了！";
-          }
-        });
-      }
-    }
-
-    function changeCharacter() {
-      const inputVal = document.getElementById('char-input').value.trim();
-      if (inputVal) {
-        initWriter(inputVal[0]);
-      }
-    }
-
-    function loadChar(char) {
+    function setChar(char) {
+      document.getElementById('char-input').value = char;
       initWriter(char);
     }
 
-    // 初始化第一個字
-    initWriter('永');
+    function animateChar() {
+      if (writer) writer.animateCharacter();
+    }
+
+    function quizChar() {
+      if (writer) writer.quiz();
+    }
+
+    // 頁面載入時初始化預設字
+    window.onload = function() {
+      initWriter('永');
+    };
   </script>
 
 </body>
