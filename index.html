@@ -212,8 +212,8 @@
   <div id="status-msg"></div>
 
   <script>
-
-    const GOOGLE_SCRIPT_URL = https://script.google.com/macros/s/AKfycbyaJRaXNKz8Tyx1fcYgo0Mw0Eu9dpHUVOdQwbTcYkiFMobrGipCHDzTxNw1G9rH3Nq2Uw/exec;
+    // 💡 若有 Google Apps Script URL 請填入雙引號內；若無則保留空字串 ""
+    const GOOGLE_SCRIPT_URL = "";
 
     const edbCategories = {
       primary1: ['學習', '學校', '老師', '同學', '爸爸', '媽媽', '朋友', '寫字', '讀書', '開心', '看書', '身體'],
@@ -277,7 +277,7 @@
     }
 
     function loadCharAtIndex() {
-      if (currentWord.length === 0) return;
+      if (!currentWord || currentWord.length === 0) return;
 
       const currentChar = currentWord[currentIndex];
       
@@ -351,7 +351,6 @@
       if (writer) writer.animateCharacter();
     }
 
-    // 開始測驗並在完成時上傳數據至 Google Sheets
     function quizChar() {
       if (!writer) return;
       
@@ -364,16 +363,13 @@
 
           alert(`🎉 恭喜完成「${currentWord[currentIndex]}」字練習！\n錯誤筆劃數：${totalMistakes}\n評分：${stars}`);
 
-          // 自動上傳學習數據至 Google Sheets
           uploadProgressToSheets(totalMistakes, stars);
         }
       });
     }
 
-    // 數據傳送函式 (Fetch API)
     function uploadProgressToSheets(mistakes, stars) {
-      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT_URL_HERE")) {
-        console.log("未設定 Google Apps Script URL，跳過數據上傳");
+      if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.trim() === "") {
         return;
       }
 
@@ -393,7 +389,7 @@
 
       fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
-        mode: "no-cors", // 跨域請求標籤
+        mode: "no-cors",
         headers: {
           "Content-Type": "application/json"
         },
@@ -404,12 +400,12 @@
       })
       .catch(err => {
         console.error("Upload error:", err);
-        document.getElementById('status-msg').innerText = "⚠️ 數據記錄失敗，請檢查網路連線。";
+        document.getElementById('status-msg').innerText = "⚠️ 數據記錄失敗。";
       });
     }
 
     function speakCurrentChar() {
-      if (currentWord.length === 0) return;
+      if (!currentWord || currentWord.length === 0) return;
       const currentChar = currentWord[currentIndex];
 
       if ('speechSynthesis' in window) {
@@ -422,10 +418,9 @@
       }
     }
 
-window.onload = function() {
-  changeCategory();
-  selectWord("學習");
-};
+    window.onload = function() {
+      changeCategory();
+    };
   </script>
 
 </body>
