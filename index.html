@@ -16,15 +16,23 @@
     }
     h1 {
       color: #0277bd;
-      margin-bottom: 20px;
-    }
-    .input-group, .voice-group {
       margin-bottom: 15px;
+    }
+    .control-panel {
+      background-color: white;
+      max-width: 500px;
+      margin: 0 auto 15px auto;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .input-group, .voice-group, .category-group {
+      margin-bottom: 12px;
     }
     input[type="text"] {
       padding: 8px 12px;
       font-size: 18px;
-      width: 120px;
+      width: 140px;
       text-align: center;
       border: 2px solid #0277bd;
       border-radius: 6px;
@@ -32,22 +40,23 @@
     }
     select {
       padding: 8px 12px;
-      font-size: 16px;
+      font-size: 15px;
       border: 2px solid #0277bd;
       border-radius: 6px;
       background-color: white;
       outline: none;
       cursor: pointer;
+      margin: 3px;
     }
     button {
       padding: 8px 16px;
-      font-size: 16px;
+      font-size: 15px;
       background-color: #0277bd;
       color: white;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin: 5px;
+      margin: 4px;
     }
     button:hover {
       background-color: #01579b;
@@ -58,20 +67,35 @@
     .btn-audio:hover {
       background-color: #f57c00;
     }
+    .btn-nav {
+      background-color: #4caf50;
+    }
+    .btn-nav:hover {
+      background-color: #388e3c;
+    }
+    .btn-nav:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
     .word-bank {
-      margin: 15px 0;
+      margin: 10px 0;
     }
     .word-btn {
       background-color: white;
       color: #0277bd;
       border: 1px solid #0277bd;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 16px;
-      border-radius: 4px;
-      margin: 3px;
+      border-radius: 6px;
+      margin: 4px;
+      cursor: pointer;
     }
     .word-btn:hover {
       background-color: #e1f5fe;
+    }
+    .word-btn.active {
+      background-color: #0277bd;
+      color: white;
     }
     /* 米字格寫字框容器 */
     .target-box {
@@ -84,39 +108,61 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.15);
       margin: 15px auto;
     }
+    .progress-text {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      margin: 10px 0 5px 0;
+    }
   </style>
 </head>
 <body>
 
   <h1>漢字筆順大挑戰</h1>
 
-  <div class="input-group">
-    <input type="text" id="char-input" value="永" maxlength="1">
-    <button onclick="updateChar()">載入漢字</button>
+  <div class="control-panel">
+    <!-- 自訂輸入多字詞語 -->
+    <div class="input-group">
+      <input type="text" id="char-input" value="學習" placeholder="請輸入單字或詞語">
+      <button onclick="loadCustomWord()">載入詞語</button>
+    </div>
+
+    <!-- 主題分類選單 -->
+    <div class="category-group">
+      <label for="category-select"><strong>主題分類：</strong></label>
+      <select id="category-select" onchange="changeCategory()">
+        <option value="grade1">一年級常用字</option>
+        <option value="animals">可愛動物</option>
+        <option value="body">身體部位</option>
+        <option value="nature">自然現象</option>
+      </select>
+    </div>
+
+    <!-- 常用詞語庫 -->
+    <div class="word-bank" id="word-bank-container">
+      <!-- 動態生成詞語按鈕 -->
+    </div>
+
+    <!-- 發音語言選擇與朗讀 -->
+    <div class="voice-group">
+      <label for="lang-select"><strong>發音語言：</strong></label>
+      <select id="lang-select">
+        <option value="zh-HK">粵語 (廣東話)</option>
+        <option value="zh-TW" selected>國語 (普通話)</option>
+      </select>
+      <button class="btn-audio" onclick="speakCurrentChar()">🔊 播放發音</button>
+    </div>
   </div>
 
-  <!-- 發音語言選擇與朗讀按鈕 -->
-  <div class="voice-group">
-    <label for="lang-select"><strong>發音語言：</strong></label>
-    <select id="lang-select">
-      <option value="zh-HK">粵語 (廣東話)</option>
-      <option value="zh-TW" selected>國語 (普通話)</option>
-    </select>
-    <button class="btn-audio" onclick="speakCurrentChar()">🔊 播放發音</button>
+  <!-- 多字詞語進度與導覽 -->
+  <div class="progress-text" id="progress-indicator">字詞進度：1 / 2</div>
+
+  <div class="nav-group">
+    <button class="btn-nav" id="btn-prev" onclick="prevChar()">⬅️ 上一字</button>
+    <button class="btn-nav" id="btn-next" onclick="nextChar()">下一字 ➡️</button>
   </div>
 
-  <div class="word-bank">
-    常用字詞庫：<br>
-    <button class="word-btn" onclick="setChar('永')">永</button>
-    <button class="word-btn" onclick="setChar('花')">花</button>
-    <button class="word-btn" onclick="setChar('草')">草</button>
-    <button class="word-btn" onclick="setChar('山')">山</button>
-    <button class="word-btn" onclick="setChar('水')">水</button>
-    <button class="word-btn" onclick="setChar('愛')">愛</button>
-    <button class="word-btn" onclick="setChar('學')">學</button>
-  </div>
-
-  <!-- 寫字框容器 -->
+  <!-- 米字格寫字框容器 -->
   <div id="grid-container" class="target-box"></div>
 
   <div>
@@ -125,8 +171,99 @@
   </div>
 
   <script>
+    // 主題分類詞庫資料
+    const categories = {
+      grade1: ['學習', '學校', '朋友', '老師', '大小', '多少'],
+      animals: ['小狗', '小貓', '飛鳥', '游魚', '白兔', '大象'],
+      body: ['眼睛', '雙手', '雙腳', '耳朵', '嘴巴', '頭髮'],
+      nature: ['太陽', '月亮', '白雲', '下雨', '大山', '流水']
+    };
+
+    let currentWord = "學習";
+    let currentIndex = 0;
     let writer;
-    let currentChar = '永';
+
+    // 初始化與載入分類按鈕
+    function changeCategory() {
+      const selectedCat = document.getElementById('category-select').value;
+      const wordList = categories[selectedCat];
+      const bankContainer = document.getElementById('word-bank-container');
+      bankContainer.innerHTML = '';
+
+      wordList.forEach((word, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'word-btn' + (idx === 0 ? ' active' : '');
+        btn.innerText = word;
+        btn.onclick = () => selectWord(word, btn);
+        bankContainer.appendChild(btn);
+      });
+
+      // 載入該分類第一個詞語
+      if (wordList.length > 0) {
+        selectWord(wordList[0]);
+      }
+    }
+
+    // 選擇特定詞語
+    function selectWord(word, targetBtn) {
+      currentWord = word;
+      currentIndex = 0;
+      document.getElementById('char-input').value = word;
+
+      // 更新按鈕高亮狀態
+      const buttons = document.querySelectorAll('.word-btn');
+      buttons.forEach(btn => btn.classList.remove('active'));
+      if (targetBtn) {
+        targetBtn.classList.add('active');
+      }
+
+      loadCharAtIndex();
+    }
+
+    // 載入自訂輸入框的詞語
+    function loadCustomWord() {
+      const val = document.getElementById('char-input').value.trim();
+      if (val) {
+        currentWord = val;
+        currentIndex = 0;
+        // 清除按鈕高亮
+        document.querySelectorAll('.word-btn').forEach(btn => btn.classList.remove('active'));
+        loadCharAtIndex();
+      }
+    }
+
+    // 依據索引載入當前單字與更新控制按鈕
+    function loadCharAtIndex() {
+      if (currentWord.length === 0) return;
+
+      const currentChar = currentWord[currentIndex];
+      
+      // 更新進度顯示
+      document.getElementById('progress-indicator').innerText = 
+        `詞語：「${currentWord}」 （第 ${currentIndex + 1} / ${currentWord.length} 字：${currentChar}）`;
+
+      // 更新上一字/下一字按鈕狀態
+      document.getElementById('btn-prev').disabled = (currentIndex === 0);
+      document.getElementById('btn-next').disabled = (currentIndex === currentWord.length - 1);
+
+      // 初始化 Hanzi Writer
+      initWriter(currentChar);
+    }
+
+    // 上一字 / 下一字
+    function prevChar() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        loadCharAtIndex();
+      }
+    }
+
+    function nextChar() {
+      if (currentIndex < currentWord.length - 1) {
+        currentIndex++;
+        loadCharAtIndex();
+      }
+    }
 
     // 繪製米字格 SVG 背景
     function drawRiceGrid(svg) {
@@ -138,10 +275,10 @@
       group.setAttribute('stroke-width', '1');
 
       const lines = [
-        `M 0 ${half} L ${size} ${half}`, // 橫虛線
-        `M ${half} 0 L ${half} ${size}`, // 豎虛線
-        `M 0 0 L ${size} ${size}`,       // 對角線 1
-        `M ${size} 0 L 0 ${size}`        // 對角線 2
+        `M 0 ${half} L ${size} ${half}`,
+        `M ${half} 0 L ${half} ${size}`,
+        `M 0 0 L ${size} ${size}`,
+        `M ${size} 0 L 0 ${size}`
       ];
 
       lines.forEach(pathData => {
@@ -155,7 +292,6 @@
 
     // 初始化 Hanzi Writer
     function initWriter(character) {
-      currentChar = character;
       document.getElementById('grid-container').innerHTML = '';
       writer = HanziWriter.create('grid-container', character, {
         width: 300,
@@ -169,37 +305,25 @@
           drawRiceGrid(svg);
         }
       });
-      // 載入新字時自動播放一次發音
+      // 自動朗讀當前單字
       speakCurrentChar();
     }
 
     // 語音朗讀功能 (Web Speech API)
     function speakCurrentChar() {
+      if (currentWord.length === 0) return;
+      const currentChar = currentWord[currentIndex];
+
       if ('speechSynthesis' in window) {
-        // 停止之前的語音播放
         window.speechSynthesis.cancel();
         
         const utterance = new SpeechSynthesisUtterance(currentChar);
         const selectedLang = document.getElementById('lang-select').value;
         utterance.lang = selectedLang;
-        utterance.rate = 0.8; // 稍微放慢語速，方便小朋友聽清楚
+        utterance.rate = 0.8;
 
         window.speechSynthesis.speak(utterance);
-      } else {
-        alert("您的瀏覽器不支援語音朗讀功能");
       }
-    }
-
-    function updateChar() {
-      const char = document.getElementById('char-input').value.trim();
-      if (char) {
-        initWriter(char[0]);
-      }
-    }
-
-    function setChar(char) {
-      document.getElementById('char-input').value = char;
-      initWriter(char);
     }
 
     function animateChar() {
@@ -210,9 +334,9 @@
       if (writer) writer.quiz();
     }
 
-    // 頁面載入時初始化預設字
+    // 頁面載入時初始化
     window.onload = function() {
-      initWriter('永');
+      changeCategory();
     };
   </script>
 
