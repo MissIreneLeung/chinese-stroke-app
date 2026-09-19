@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢字筆順大挑戰</title>
+  <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #f0f8ff;
+    }
+    h1 {
+      color: #0288d1;
+      margin-bottom: 10px;
+    }
+    .input-section {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    input[type="text"] {
+      padding: 8px 12px;
+      font-size: 18px;
+      width: 100px;
+      text-align: center;
+      border: 2px solid #0288d1;
+      border-radius: 8px;
+      outline: none;
+    }
+    .word-bank {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: 320px;
+    }
+    .word-btn {
+      padding: 6px 12px;
+      font-size: 16px;
+      background-color: #ffffff;
+      border: 1px solid #b3e5fc;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #0277bd;
+      font-weight: bold;
+    }
+    .word-btn:hover {
+      background-color: #e1f5fe;
+    }
+    #character-target-div {
+      width: 300px;
+      height: 300px;
+      border: 4px solid #0288d1;
+      border-radius: 12px;
+      background-color: #ffffff;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+    button.action-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      color: #ffffff;
+      background-color: #0288d1;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button.action-btn:hover {
+      background-color: #01579b;
+    }
+    #message {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333333;
+      height: 24px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>漢字筆順大挑戰</h1>
+
+  <!-- 自由輸入框 -->
+  <div class="input-section">
+    <input type="text" id="char-input" maxlength="1" value="永" placeholder="輸入字">
+    <button class="action-btn" onclick="changeCharacter()">載入漢字</button>
+  </div>
+
+  <!-- 小學常用字詞庫 -->
+  <div class="word-bank">
+    <span style="font-size: 14px; color: #555; width: 100%; text-align: center;">常用字詞庫：</span>
+    <button class="word-btn" onclick="loadChar('永')">永</button>
+    <button class="word-btn" onclick="loadChar('花')">花</button>
+    <button class="word-btn" onclick="loadChar('草')">草</button>
+    <button class="word-btn" onclick="loadChar('山')">山</button>
+    <button class="word-btn" onclick="loadChar('水')">水</button>
+    <button class="word-btn" onclick="loadChar('愛')">愛</button>
+    <button class="word-btn" onclick="loadChar('學')">學</button>
+  </div>
+
+  <!-- 筆順畫布 -->
+  <div id="character-target-div"></div>
+
+  <!-- 操作按鈕 -->
+  <div class="controls">
+    <button class="action-btn" onclick="animateChar()">觀看示範</button>
+    <button class="action-btn" onclick="startQuiz()">開始練習</button>
+  </div>
+
+  <div id="message"></div>
+
+  <script>
+    let writer;
+    let currentChar = '永';
+
+    function initWriter(char) {
+      document.getElementById('character-target-div').innerHTML = '';
+      currentChar = char;
+      document.getElementById('char-input').value = char;
+
+      writer = HanziWriter.create('character-target-div', char, {
+        width: 300,
+        height: 300,
+        padding: 15,
+        showOutline: true,
+        strokeAnimationSpeed: 1,
+        delayBetweenStrokes: 200,
+        radicalColor: '#168f16'
+      });
+      document.getElementById('message').innerText = "";
+    }
+
+    function animateChar() {
+      if (writer) {
+        document.getElementById('message').innerText = "正在示範筆順...";
+        writer.animateCharacter({
+          onComplete: function() {
+            document.getElementById('message').innerText = "示範完成！請點擊『開始練習』。";
+          }
+        });
+      }
+    }
+
+    function startQuiz() {
+      if (writer) {
+        document.getElementById('message').innerText = "請按照筆順寫出這個字！";
+        writer.quiz({
+          onMistake: function(strokeData) {
+            document.getElementById('message').innerText = "筆順或位置不對喔，再試一次！";
+          },
+          onCorrectStroke: function(strokeData) {
+            document.getElementById('message').innerText = `太棒了！寫對第 ${strokeData.strokeNum + 1} 劃！`;
+          },
+          onComplete: function(summaryData) {
+            document.getElementById('message').innerText = "🎉 恭喜你！成功寫完這個字了！";
+          }
+        });
+      }
+    }
+
+    function changeCharacter() {
+      const inputVal = document.getElementById('char-input').value.trim();
+      if (inputVal) {
+        initWriter(inputVal[0]);
+      }
+    }
+
+    function loadChar(char) {
+      initWriter(char);
+    }
+
+    // 初始化第一個字
+    initWriter('永');
+  </script>
+
+</body>
+</html>
